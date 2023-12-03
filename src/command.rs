@@ -1,8 +1,9 @@
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(version)]
+struct Args {}
 
 pub fn run() {
-    version();
-}
-fn version() {
-    println!("pipeline {}", VERSION);
+    let _args = Args::parse();
 }
