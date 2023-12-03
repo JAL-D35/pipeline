@@ -1,5 +1,6 @@
 mod command;
+mod config;
 
 fn main() {
-    command::run()
+    command::Command::run()
 }
