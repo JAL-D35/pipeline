@@ -1,8 +1,10 @@
+use crate::source;
 use std::io::Read;
 
 #[derive(serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Config {}
+pub struct Config {
+    source: source::config::Config,
+}
 
 impl Config {
     pub fn new(reader: impl Read) -> Self {
@@ -18,24 +20,36 @@ impl Config {
 mod test {
     use super::*;
 
+    use std::io::Cursor;
     use std::panic::catch_unwind;
-
-    struct MockReader {
-        content: String,
-    }
-
-    impl Read for MockReader {
-        fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-            buf[..self.content.len()].copy_from_slice(self.content.as_bytes());
-            Ok(self.content.len())
-        }
-    }
 
     #[test]
     fn test_new_config_is_ok() {
-        let reader = MockReader {
-            content: "".to_string(),
-        };
+        let yaml_str = "\
+            source:\n\
+            +data_go_kr:\n\
+            ++host: host_for_test\n\
+            ++service_key: service_key_for_test\n"
+            .replace("+", " ");
+
+        let reader = Cursor::new(yaml_str);
+
+        let test = catch_unwind(|| {
+            Config::new(reader);
+        });
+
+        assert!(test.is_ok());
+    }
+
+    #[test]
+    fn test_new_config_is_ok_without_data_go_kr_host() {
+        let yaml_str = "\
+            source:\n\
+            +data_go_kr:\n\
+            ++service_key: service_key_for_test\n"
+            .replace("+", " ");
+
+        let reader = Cursor::new(yaml_str);
 
         let test = catch_unwind(|| {
             Config::new(reader);
